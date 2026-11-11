@@ -61,7 +61,6 @@ header nav{align-items:center}
     <li data-v="detail">2 상품 상세</li>
     <li data-v="cart">3 장바구니</li>
     <li data-v="checkout">4 주문·결제</li>
-    <li data-v="done">5 결제 완료</li>
   </ul>
 
   <!-- 1. 상품 목록 -->
@@ -88,7 +87,7 @@ header nav{align-items:center}
   <!-- 4. 주문·결제 -->
   <section class="view" id="v-checkout">
     <h2>주문·결제</h2>
-    <span class="tag">연습: begin_checkout · add_shipping_info · add_payment_info · purchase</span>
+    <span class="tag">연습: begin_checkout · add_shipping_info · add_payment_info (purchase는 결제 완료 페이지 order-complete.html에서 발생)</span>
     <div class="notice">교육용 모의 결제입니다. 실제 결제는 이루어지지 않으며, 카드번호 등 결제 정보를 입력하지 마세요.</div>
     <div class="sum" id="co-items"></div>
     <div class="field">
@@ -107,9 +106,13 @@ header nav{align-items:center}
       <select id="co-pay">
         <option value="">결제 수단 선택</option>
         <option value="card">신용카드 (모의)</option>
-        <option value="bank">계좌이체 (모의)</option>
+        <option value="bank_transfer">무통장입금 (모의)</option>
         <option value="easy">간편결제 (모의)</option>
       </select>
+      <div id="bank-box" class="notice" style="display:none;background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a">
+        입금 안내 (모의): 우진은행 000-0000-0000-00 (가상 계좌) · 예금주 우진애드<br>주문 후 3일 이내 입금 · 실제로 입금하지 마세요.
+        <input type="text" id="co-depositor" placeholder="입금자명 (아무 값이나 입력)" style="margin-top:8px">
+      </div>
       <button class="btn line" id="btn-pay-confirm" style="margin:0">결제 수단 확정</button>
     </div>
     <div class="sum" id="co-sum"></div>
@@ -117,13 +120,6 @@ header nav{align-items:center}
     <button class="btn line" id="btn-back-cart">장바구니로</button>
   </section>
 
-  <!-- 5. 결제 완료 -->
-  <section class="view" id="v-done">
-    <h2>결제가 완료되었습니다 (모의)</h2>
-    <span class="tag">연습: purchase 이벤트 1회 발생 확인 / 새로고침해도 중복 발생하지 않는지 확인</span>
-    <div class="sum" id="done-body"></div>
-    <button class="btn" id="btn-continue">상품 더 보기</button>
-  </section>
 </div></main>
 
 <footer><div class="wrap">(주)우진애드 · GA4 전자상거래 교육용 모의 쇼핑 · 실제 결제 없음</div></footer>
@@ -277,6 +273,7 @@ function renderCheckout() {
     '<div class="total"><span>결제 금액</span><span>' + won(total()) + '</span></div>';
   $('btn-ship-confirm').textContent = st.shipDone ? '수령 방법 확정됨 ✓' : '수령 방법 확정';
   $('btn-pay-confirm').textContent = st.payDone ? '결제 수단 확정됨 ✓' : '결제 수단 확정';
+  $('bank-box').style.display = st.pay === 'bank_transfer' ? 'block' : 'none';
   $('btn-purchase').disabled = !(st.shipDone && st.payDone);
 }
 $('btn-coupon').addEventListener('click', function () {
@@ -304,18 +301,17 @@ $('btn-pay-confirm').addEventListener('click', function () {
 });
 $('btn-back-cart').addEventListener('click', openCart);
 
-// ===== 구매 (모의) =====
+// ===== 주문 (모의): purchase 이벤트는 order-complete.html 에서 발생 =====
 $('btn-purchase').addEventListener('click', function () {
   if (!$('co-name').value.trim() || !$('co-phone').value.trim()) { toast('이름과 연락처를 입력하세요'); return; }
+  if (st.pay === 'bank_transfer' && !$('co-depositor').value.trim()) { toast('입금자명을 입력하세요'); return; }
   var tx = 'T' + Date.now(), val = total();
-  var d = { transaction_id: tx, currency: 'KRW', value: val, tax: Math.round(val / 11), shipping: st.shipFee, items: cartItems() };
-  if (st.coupon) d.coupon = st.coupon;
-  ec('purchase', d);
-  show('done');
-  $('done-body').innerHTML = '<div><span>주문번호</span><span>' + tx + '</span></div><div class="total"><span>결제 금액</span><span>' + won(val) + '</span></div>';
+  var order = { transaction_id: tx, currency: 'KRW', value: val, tax: Math.round(val / 11), shipping: st.shipFee, payment_type: st.pay, items: cartItems(), createdAt: Date.now() };
+  if (st.coupon) order.coupon = st.coupon;
+  sessionStorage.setItem('order', JSON.stringify(order));   // 이름·연락처·입금자명은 저장/전송하지 않음
   cart = {}; save();
+  location.href = 'order-complete.html?order_id=' + tx;
 });
-$('btn-continue').addEventListener('click', showList);
 
 badge();
 showList();
