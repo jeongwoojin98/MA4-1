@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>상품 안내 - 우진애드 (GA4 전자상거래 연습)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-5V547CKD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+<!-- 이 페이지 전용 스타일 (style.css는 수정하지 않습니다) -->
+<style>
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px;padding:0;list-style:none}
+.steps li{padding:6px 14px;border-radius:99px;background:#eef0f6;color:#6b7280;font-size:.85rem}
+.steps li.on{background:#4f46e5;color:#fff}
+.view{display:none}
+.view.on{display:block}
+.thumb{height:140px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;margin-bottom:12px}
+.price{font-weight:700;font-size:1.1rem;margin:4px 0 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.promo{display:block;width:100%;text-align:left;background:linear-gradient(90deg,#4f46e5,#7c5cff);color:#fff;border:0;border-radius:14px;padding:18px 22px;margin-bottom:24px;cursor:pointer;font:inherit}
+.promo b{display:block;font-size:1.1rem}
+table.cart{width:100%;border-collapse:collapse;margin-bottom:16px}
+table.cart th,table.cart td{padding:12px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:.95rem}
+.qty{display:inline-flex;align-items:center;gap:8px}
+.qty button{width:28px;height:28px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
+.sum{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+.sum div{display:flex;justify-content:space-between;padding:3px 0}
+.sum .total{font-weight:700;font-size:1.15rem;border-top:1px solid var(--line);margin-top:8px;padding-top:10px}
+.field{display:grid;gap:10px;max-width:460px;margin-bottom:16px}
+.notice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:10px 14px;font-size:.9rem;margin-bottom:16px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:99px;display:none;z-index:300;font-size:.9rem}
+button.btn[disabled]{opacity:.4;cursor:not-allowed}
+header nav{align-items:center}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5V547CKD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="solid">
+  <a class="logo" href="index.html">(주)우진애드</a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="services.html">Service</a>
+    <a href="shop.html" id="nav-shop">Shop</a>
+    <button class="btn line" id="btn-cart" style="margin:0">장바구니 <b id="cart-count">0</b></button>
+  </nav>
+</header>
+
+<main class="sub"><div class="wrap">
+  <ul class="steps" id="steps">
+    <li data-v="list">1 상품 목록</li>
+    <li data-v="detail">2 상품 상세</li>
+    <li data-v="cart">3 장바구니</li>
+    <li data-v="checkout">4 주문·결제</li>
+    <li data-v="done">5 결제 완료</li>
+  </ul>
+
+  <!-- 1. 상품 목록 -->
+  <section class="view on" id="v-list">
+    <h2>상품 안내</h2>
+    <span class="tag">연습: view_promotion · select_promotion · view_item_list · select_item · add_to_cart</span>
+    <button class="promo" id="promo-banner"><b>신규 가입 10% 할인 쿠폰 WELCOME10</b>결제 단계에서 쿠폰 코드를 입력하세요. (배너 클릭 = select_promotion)</button>
+    <div class="grid" id="product-grid"></div>
+  </section>
+
+  <!-- 2. 상품 상세 -->
+  <section class="view" id="v-detail">
+    <span class="tag">연습: view_item · add_to_cart</span>
+    <div id="detail-body"></div>
+  </section>
+
+  <!-- 3. 장바구니 -->
+  <section class="view" id="v-cart">
+    <h2>장바구니</h2>
+    <span class="tag">연습: view_cart · add_to_cart · remove_from_cart · begin_checkout</span>
+    <div id="cart-body"></div>
+  </section>
+
+  <!-- 4. 주문·결제 -->
+  <section class="view" id="v-checkout">
+    <h2>주문·결제</h2>
+    <span class="tag">연습: begin_checkout · add_shipping_info · add_payment_info · purchase</span>
+    <div class="notice">교육용 모의 결제입니다. 실제 결제는 이루어지지 않으며, 카드번호 등 결제 정보를 입력하지 마세요.</div>
+    <div class="sum" id="co-items"></div>
+    <div class="field">
+      <input type="text" id="co-name" placeholder="이름 (아무 값이나 입력)">
+      <input type="tel" id="co-phone" placeholder="연락처 (아무 값이나 입력)">
+      <div class="row">
+        <input type="text" id="co-coupon" placeholder="쿠폰 코드 (WELCOME10)" style="flex:1">
+        <button class="btn line" id="btn-coupon" style="margin:0">쿠폰 적용</button>
+      </div>
+      <select id="co-ship">
+        <option value="">자료 수령 방법 선택</option>
+        <option value="email|0">이메일 수령 (무료)</option>
+        <option value="post|3000">우편 수령 (3,000원)</option>
+      </select>
+      <button class="btn line" id="btn-ship-confirm" style="margin:0">수령 방법 확정</button>
+      <select id="co-pay">
+        <option value="">결제 수단 선택</option>
+        <option value="card">신용카드 (모의)</option>
+        <option value="bank">계좌이체 (모의)</option>
+        <option value="easy">간편결제 (모의)</option>
+      </select>
+      <button class="btn line" id="btn-pay-confirm" style="margin:0">결제 수단 확정</button>
+    </div>
+    <div class="sum" id="co-sum"></div>
+    <button class="btn" id="btn-purchase" disabled>결제하기 (모의)</button>
+    <button class="btn line" id="btn-back-cart">장바구니로</button>
+  </section>
+
+  <!-- 5. 결제 완료 -->
+  <section class="view" id="v-done">
+    <h2>결제가 완료되었습니다 (모의)</h2>
+    <span class="tag">연습: purchase 이벤트 1회 발생 확인 / 새로고침해도 중복 발생하지 않는지 확인</span>
+    <div class="sum" id="done-body"></div>
+    <button class="btn" id="btn-continue">상품 더 보기</button>
+  </section>
+</div></main>
+
+<footer><div class="wrap">(주)우진애드 · GA4 전자상거래 교육용 모의 쇼핑 · 실제 결제 없음</div></footer>
+<div class="toast" id="toast"></div>
+
+<script src="common.js"></script>
+<script>
+// ===== 데이터 =====
+var P = [
+  { item_id: 'P001', item_name: '광고 성과 진단 리포트', item_brand: '우진애드', item_category: '컨설팅', price: 99000,  icon: '📊', bg: '#e0e7ff', desc: '현재 광고 계정을 점검하고 개선안을 정리한 리포트' },
+  { item_id: 'P002', item_name: 'GA4·GTM 측정 세팅 패키지', item_brand: '우진애드', item_category: '세팅', price: 330000, icon: '⚙️', bg: '#dcfce7', desc: '핵심 이벤트와 전환 측정을 한 번에 구성' },
+  { item_id: 'P003', item_name: '월간 광고 운영 대행 (1개월)', item_brand: '우진애드', item_category: '운영대행', price: 990000, icon: '📣', bg: '#fef3c7', desc: '매체 운영과 주간 성과 리포트 포함' }
+];
+var LIST = { item_list_id: 'main_list', item_list_name: '추천 상품' };
+var cart = JSON.parse(sessionStorage.getItem('cart') || '{}');
+var st = { coupon: '', shipTier: '', shipFee: 0, shipDone: false, pay: '', payDone: false };
+
+// ===== 공통 함수 =====
+function find(id) { return P.filter(function (p) { return p.item_id === id; })[0]; }
+function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
+function disc(p) { return st.coupon ? Math.round(p.price * 0.1) : 0; }
+function item(p, q, idx, inList) {
+  var o = { item_id: p.item_id, item_name: p.item_name, item_brand: p.item_brand, item_category: p.item_category, price: p.price };
+  if (q) o.quantity = q;
+  if (idx !== undefined) o.index = idx;
+  if (inList) { o.item_list_id = LIST.item_list_id; o.item_list_name = LIST.item_list_name; }
+  var d = disc(p);
+  if (d) { o.discount = d; o.coupon = st.coupon; }
+  return o;
+}
+function cartIds() { return Object.keys(cart); }
+function cartItems() { return cartIds().map(function (id, i) { return item(find(id), cart[id], i); }); }
+function subtotal() { return cartIds().reduce(function (s, id) { return s + find(id).price * cart[id]; }, 0); }
+function discountTotal() { return cartIds().reduce(function (s, id) { return s + disc(find(id)) * cart[id]; }, 0); }
+function total() { return subtotal() - discountTotal() + st.shipFee; }
+function ec(event, data) {
+  dataLayer.push({ ecommerce: null });      // 이전 ecommerce 객체 초기화
+  dataLayer.push({ event: event, ecommerce: data });
+}
+function save() { sessionStorage.setItem('cart', JSON.stringify(cart)); badge(); }
+function badge() { document.getElementById('cart-count').textContent = cartIds().reduce(function (s, id) { return s + cart[id]; }, 0); }
+function toast(msg) {
+  var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toast.t); toast.t = setTimeout(function () { t.style.display = 'none'; }, 2000);
+}
+function $(id) { return document.getElementById(id); }
+
+function show(v) {
+  document.querySelectorAll('.view').forEach(function (e) { e.classList.toggle('on', e.id === 'v-' + v); });
+  document.querySelectorAll('#steps li').forEach(function (e) { e.classList.toggle('on', e.dataset.v === v); });
+  window.scrollTo(0, 0);
+}
+
+// ===== 1. 목록 =====
+function showList() {
+  show('list');
+  $('product-grid').innerHTML = P.map(function (p) {
+    return '<div class="card"><div class="thumb" style="background:' + p.bg + '">' + p.icon + '</div>' +
+      '<h3>' + p.item_name + '</h3><p>' + p.desc + '</p><div class="price">' + won(p.price) + '</div>' +
+      '<div class="row"><button class="btn line" data-detail="' + p.item_id + '" style="margin:0">상세보기</button>' +
+      '<button class="btn" data-add="' + p.item_id + '" style="margin:0">장바구니 담기</button></div></div>';
+  }).join('');
+  ec('view_promotion', { creative_name: '신규가입 쿠폰 배너', creative_slot: 'top_banner', promotion_id: 'PROMO_WELCOME10', promotion_name: '신규 가입 10% 할인', items: [] });
+  ec('view_item_list', { item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name, items: P.map(function (p, i) { return item(p, 0, i, true); }) });
+}
+$('promo-banner').addEventListener('click', function () {
+  ec('select_promotion', { creative_name: '신규가입 쿠폰 배너', creative_slot: 'top_banner', promotion_id: 'PROMO_WELCOME10', promotion_name: '신규 가입 10% 할인', items: [] });
+  toast('쿠폰 코드 WELCOME10을 결제 단계에서 입력하세요');
+});
+$('product-grid').addEventListener('click', function (e) {
+  var d = e.target.getAttribute('data-detail'), a = e.target.getAttribute('data-add');
+  if (d) openDetail(d);
+  if (a) addToCart(a, 1);
+});
+
+// ===== 2. 상세 =====
+function openDetail(id) {
+  var p = find(id), idx = P.indexOf(p);
+  ec('select_item', { item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name, items: [item(p, 0, idx, true)] });
+  show('detail');
+  $('detail-body').innerHTML =
+    '<div class="card"><div class="thumb" style="background:' + p.bg + ';height:200px">' + p.icon + '</div>' +
+    '<h2>' + p.item_name + '</h2><p>' + p.desc + '</p><div class="price">' + won(p.price) + '</div>' +
+    '<div class="row" style="align-items:center"><label>수량 <input type="number" id="d-qty" value="1" min="1" max="10" style="width:80px"></label>' +
+    '<button class="btn" id="d-add" style="margin:0">장바구니 담기</button>' +
+    '<button class="btn line" id="d-back" style="margin:0">목록으로</button></div></div>';
+  $('d-add').onclick = function () { addToCart(id, Math.max(1, parseInt($('d-qty').value, 10) || 1)); };
+  $('d-back').onclick = showList;
+  ec('view_item', { currency: 'KRW', value: p.price, items: [item(p, 1)] });
+}
+
+// ===== 장바구니 담기/빼기 =====
+function addToCart(id, q) {
+  var p = find(id);
+  cart[id] = (cart[id] || 0) + q; save();
+  ec('add_to_cart', { currency: 'KRW', value: p.price * q, items: [item(p, q)] });
+  toast('장바구니에 담았습니다');
+}
+function removeFromCart(id, q) {
+  var p = find(id);
+  cart[id] -= q; if (cart[id] <= 0) delete cart[id]; save();
+  ec('remove_from_cart', { currency: 'KRW', value: p.price * q, items: [item(p, q)] });
+  renderCart();
+}
+
+// ===== 3. 장바구니 =====
+function openCart() {
+  show('cart'); renderCart();
+  if (cartIds().length) ec('view_cart', { currency: 'KRW', value: subtotal(), items: cartItems() });
+}
+function renderCart() {
+  if (!cartIds().length) {
+    $('cart-body').innerHTML = '<p>장바구니가 비어 있습니다.</p><button class="btn" id="c-shop">상품 보러 가기</button>';
+    $('c-shop').onclick = showList; return;
+  }
+  $('cart-body').innerHTML = '<table class="cart"><tr><th>상품</th><th>수량</th><th>금액</th><th></th></tr>' +
+    cartIds().map(function (id) {
+      var p = find(id);
+      return '<tr><td>' + p.item_name + '<br><small>' + won(p.price) + '</small></td>' +
+        '<td><span class="qty"><button data-minus="' + id + '">-</button>' + cart[id] + '<button data-plus="' + id + '">+</button></span></td>' +
+        '<td>' + won(p.price * cart[id]) + '</td><td><button class="btn line" data-del="' + id + '" style="margin:0;padding:6px 12px">삭제</button></td></tr>';
+    }).join('') + '</table>' +
+    '<div class="sum"><div class="total"><span>상품 금액</span><span>' + won(subtotal()) + '</span></div></div>' +
+    '<button class="btn" id="c-order">주문하기</button><button class="btn line" id="c-shop">계속 쇼핑</button>';
+  $('c-order').onclick = beginCheckout;
+  $('c-shop').onclick = showList;
+}
+$('cart-body').addEventListener('click', function (e) {
+  var m = e.target.getAttribute('data-minus'), p = e.target.getAttribute('data-plus'), d = e.target.getAttribute('data-del');
+  if (p) { addToCart(p, 1); renderCart(); }
+  if (m) removeFromCart(m, 1);
+  if (d) removeFromCart(d, cart[d]);
+});
+$('btn-cart').addEventListener('click', openCart);
+
+// ===== 4. 주문·결제 =====
+function beginCheckout() {
+  st = { coupon: '', shipTier: '', shipFee: 0, shipDone: false, pay: '', payDone: false };
+  $('co-coupon').value = ''; $('co-ship').value = ''; $('co-pay').value = '';
+  show('checkout'); renderCheckout();
+  ec('begin_checkout', { currency: 'KRW', value: subtotal(), items: cartItems() });
+}
+function renderCheckout() {
+  $('co-items').innerHTML = cartIds().map(function (id) {
+    return '<div><span>' + find(id).item_name + ' × ' + cart[id] + '</span><span>' + won(find(id).price * cart[id]) + '</span></div>';
+  }).join('');
+  $('co-sum').innerHTML =
+    '<div><span>상품 금액</span><span>' + won(subtotal()) + '</span></div>' +
+    '<div><span>쿠폰 할인' + (st.coupon ? ' (' + st.coupon + ')' : '') + '</span><span>-' + won(discountTotal()) + '</span></div>' +
+    '<div><span>수령 비용</span><span>' + won(st.shipFee) + '</span></div>' +
+    '<div class="total"><span>결제 금액</span><span>' + won(total()) + '</span></div>';
+  $('btn-ship-confirm').textContent = st.shipDone ? '수령 방법 확정됨 ✓' : '수령 방법 확정';
+  $('btn-pay-confirm').textContent = st.payDone ? '결제 수단 확정됨 ✓' : '결제 수단 확정';
+  $('btn-purchase').disabled = !(st.shipDone && st.payDone);
+}
+$('btn-coupon').addEventListener('click', function () {
+  if ($('co-coupon').value.trim().toUpperCase() === 'WELCOME10') { st.coupon = 'WELCOME10'; toast('쿠폰이 적용되었습니다'); }
+  else { st.coupon = ''; toast('유효하지 않은 쿠폰입니다'); }
+  renderCheckout();
+});
+$('co-ship').addEventListener('change', function () {
+  var v = this.value.split('|'); st.shipTier = v[0] || ''; st.shipFee = parseInt(v[1] || '0', 10); st.shipDone = false; renderCheckout();
+});
+$('co-pay').addEventListener('change', function () { st.pay = this.value; st.payDone = false; renderCheckout(); });
+$('btn-ship-confirm').addEventListener('click', function () {
+  if (!st.shipTier) { toast('수령 방법을 선택하세요'); return; }
+  st.shipDone = true; renderCheckout();
+  var d = { currency: 'KRW', value: total(), shipping_tier: st.shipTier, items: cartItems() };
+  if (st.coupon) d.coupon = st.coupon;
+  ec('add_shipping_info', d);
+});
+$('btn-pay-confirm').addEventListener('click', function () {
+  if (!st.pay) { toast('결제 수단을 선택하세요'); return; }
+  st.payDone = true; renderCheckout();
+  var d = { currency: 'KRW', value: total(), payment_type: st.pay, items: cartItems() };
+  if (st.coupon) d.coupon = st.coupon;
+  ec('add_payment_info', d);
+});
+$('btn-back-cart').addEventListener('click', openCart);
+
+// ===== 구매 (모의) =====
+$('btn-purchase').addEventListener('click', function () {
+  if (!$('co-name').value.trim() || !$('co-phone').value.trim()) { toast('이름과 연락처를 입력하세요'); return; }
+  var tx = 'T' + Date.now(), val = total();
+  var d = { transaction_id: tx, currency: 'KRW', value: val, tax: Math.round(val / 11), shipping: st.shipFee, items: cartItems() };
+  if (st.coupon) d.coupon = st.coupon;
+  ec('purchase', d);
+  show('done');
+  $('done-body').innerHTML = '<div><span>주문번호</span><span>' + tx + '</span></div><div class="total"><span>결제 금액</span><span>' + won(val) + '</span></div>';
+  cart = {}; save();
+});
+$('btn-continue').addEventListener('click', showList);
+
+badge();
+showList();
+</script>
+</body>
+</html>
