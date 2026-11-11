@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주문 완료 - 우진애드 (GA4 전자상거래 연습)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-5V547CKD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+<!-- 이 페이지 전용 스타일 (style.css는 수정하지 않습니다) -->
+<style>
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px;padding:0;list-style:none}
+.steps li{padding:6px 14px;border-radius:99px;background:#eef0f6;color:#6b7280;font-size:.85rem}
+.steps li.on{background:#4f46e5;color:#fff}
+.sum{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0;max-width:560px}
+.sum div{display:flex;justify-content:space-between;gap:16px;padding:3px 0}
+.sum .total{font-weight:700;font-size:1.15rem;border-top:1px solid var(--line);margin-top:8px;padding-top:10px}
+.status{display:inline-block;border-radius:99px;padding:4px 14px;font-weight:700;font-size:.9rem;margin-bottom:12px}
+.status.paid{background:#dcfce7;color:#166534}
+.status.wait{background:#fef3c7;color:#92400e}
+.bank{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:12px;padding:14px 18px;max-width:560px;margin-bottom:12px}
+header nav{align-items:center}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5V547CKD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<header class="solid">
+  <a class="logo" href="index.html">(주)우진애드</a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="services.html">Service</a>
+    <a href="shop.html" id="nav-shop">Shop</a>
+  </nav>
+</header>
+
+<main class="sub"><div class="wrap">
+  <ul class="steps">
+    <li>1 상품 목록</li><li>2 상품 상세</li><li>3 장바구니</li><li>4 주문·결제</li><li class="on">5 주문 완료</li>
+  </ul>
+
+  <section id="complete"></section>
+</div></main>
+
+<footer><div class="wrap">(주)우진애드 · GA4 전자상거래 교육용 모의 쇼핑 · 실제 결제 없음</div></footer>
+
+<script src="common.js"></script>
+<script>
+var box = document.getElementById('complete');
+var order = null;
+try { order = JSON.parse(sessionStorage.getItem('order') || 'null'); } catch (e) {}
+
+function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
+
+if (!order) {
+  box.innerHTML = '<h2>주문 정보가 없습니다</h2><p>상품을 담고 주문을 진행하면 이 페이지에서 주문 내역을 확인할 수 있습니다.</p><a class="btn" id="btn-go-shop" href="shop.html">상품 보러 가기</a>';
+} else {
+  var bank = order.payment_type === 'bank_transfer';
+  var payName = { card: '신용카드 (모의)', bank_transfer: '무통장입금 (모의)', easy: '간편결제 (모의)' }[order.payment_type] || order.payment_type;
+  var due = new Date(order.createdAt + 3 * 86400000).toLocaleDateString('ko-KR');
+  var rows = order.items.map(function (i) {
+    return '<div><span>' + i.item_name + ' × ' + i.quantity + '</span><span>' + won(i.price * i.quantity) + '</span></div>';
+  }).join('');
+
+  box.innerHTML =
+    '<span class="status ' + (bank ? 'wait' : 'paid') + '">' + (bank ? '입금 대기' : '결제 완료') + '</span>' +
+    '<h2>' + (bank ? '주문이 접수되었습니다 (모의)' : '결제가 완료되었습니다 (모의)') + '</h2>' +
+    '<span class="tag">연습: 페이지뷰 트리거(Page Path가 /order-complete.html 포함) · purchase 이벤트 · 새로고침 시 중복 전송 방지</span>' +
+    (bank ? '<div class="bank">입금 안내 (모의)<br>우진은행 000-0000-0000-00 (가상 계좌) · 예금주 우진애드<br>입금 기한: ' + due + '<br><small>실제로 입금하지 마세요.</small></div>' : '') +
+    '<div class="sum"><div><span>주문번호</span><span>' + order.transaction_id + '</span></div>' +
+    '<div><span>결제 수단</span><span>' + payName + '</span></div>' + rows +
+    '<div><span>수령 비용</span><span>' + won(order.shipping) + '</span></div>' +
+    (order.coupon ? '<div><span>쿠폰</span><span>' + order.coupon + '</span></div>' : '') +
+    '<div class="total"><span>결제 금액</span><span>' + won(order.value) + '</span></div></div>' +
+    '<p id="sent-note" style="color:#6b7280;font-size:.9rem"></p>' +
+    '<a class="btn" id="btn-continue" href="shop.html">상품 더 보기</a>' +
+    '<a class="btn line" id="btn-home" href="index.html">홈으로</a>';
+
+  // purchase 이벤트: 같은 주문번호는 1회만 전송 (새로고침 중복 방지)
+  var key = 'purchase_sent_' + order.transaction_id;
+  var note = document.getElementById('sent-note');
+  if (!sessionStorage.getItem(key)) {
+    var ecom = { transaction_id: order.transaction_id, currency: order.currency, value: order.value, tax: order.tax, shipping: order.shipping, items: order.items };
+    if (order.coupon) ecom.coupon = order.coupon;
+    dataLayer.push({ ecommerce: null });
+    dataLayer.push({ event: 'purchase', payment_type: order.payment_type, ecommerce: ecom });
+    sessionStorage.setItem(key, '1');
+    note.textContent = 'purchase 이벤트를 전송했습니다. 새로고침해도 다시 전송되지 않습니다.';
+  } else {
+    note.textContent = '이미 전송된 주문이라 purchase 이벤트를 다시 보내지 않았습니다 (중복 방지).';
+  }
+}
+</script>
+</body>
+</html>
