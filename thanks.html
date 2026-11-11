@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문의 완료 - GTM·GA 데모</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-5V547CKD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+
+</head>
+<body>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5V547CKD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<main class="sub">
+<section style="text-align:center"><div class="wrap">
+  <h1>문의가 완료되었습니다</h1>
+  <p>감사합니다. <b id="sec">5</b>초 뒤 이전 페이지로 돌아갑니다.</p>
+  <button class="btn" id="back-now">지금 돌아가기</button>
+</div></section>
+</main>
+
+<script src="common.js"></script>
+<script>
+var back = sessionStorage.getItem('returnUrl') || 'index.html';
+var n = 5;
+function go() { location.href = back; }
+document.getElementById('back-now').addEventListener('click', go);
+var t = setInterval(function () {
+  n--;
+  document.getElementById('sec').textContent = n;
+  if (n <= 0) { clearInterval(t); go(); }
+}, 1000);
+</script>
+</body>
+</html>
